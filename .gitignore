@@ -1,0 +1,4 @@
+#ignored files
+*.xml
+.idea/
+*.iml
