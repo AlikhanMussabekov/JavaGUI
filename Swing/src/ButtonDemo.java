@@ -29,7 +29,7 @@ public class ButtonDemo implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getActionCommand().equals("Up")){
+        if(e.getActionCommand().equals("U")){
             label.setText("You pressed Up.");
         }else {
             label.setText("You pressed Down.");
