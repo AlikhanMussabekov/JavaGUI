@@ -75,7 +75,7 @@ class PasswordWindow extends JFrame implements ActionListener {
                     passwordCheckLabel.setForeground(Color.GREEN);
                     passwordTextField.setBorder(BorderFactory.createLineBorder(Color.GREEN));
                     dispose();
-                    TreeSelectionModelTest tree = new TreeSelectionModelTest();
+                    new TreeSelectionModelTest();
                 }else{
                     passwordTextField.setText("");
                     passwordCheckLabel.setText("Неверный пароль");
