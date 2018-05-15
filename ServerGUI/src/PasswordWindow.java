@@ -2,20 +2,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+import java.io.File;
 
 class PasswordWindow extends JFrame implements ActionListener {
 
-    JTextField passwordTextField;
-    JButton enterButton;
-    JLabel greetingLabel,passwordCheckLabel;
+    private static final String USERNAME = ".user.name";
+    private static final String PATH = "/programming/Java/lab5/.password";
 
-    JFrame passwordWindowfFrame = new JFrame("Вход");
+    private JTextField passwordTextField;
+    private JLabel passwordCheckLabel;
 
     PasswordWindow(){
 
-        passwordWindowfFrame.setSize(300,150);
-        passwordWindowfFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        passwordWindowfFrame.setMinimumSize(new Dimension(300,150));
+        super("Вход");
+
+        setSize(300,150);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setMinimumSize(new Dimension(300,150));
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -26,12 +31,12 @@ class PasswordWindow extends JFrame implements ActionListener {
 
         passwordTextField.setActionCommand("textFieldAction");
 
-        enterButton = new JButton("Войти");
+        JButton enterButton = new JButton("Войти");
 
         passwordTextField.addActionListener(this);
         enterButton.addActionListener(this);
 
-        greetingLabel = new JLabel("Добро пожаловать!");
+        JLabel greetingLabel = new JLabel("Добро пожаловать!");
         greetingLabel.setFont(new Font("Courier New", Font.ITALIC, 25));
 
         passwordCheckLabel = new JLabel();
@@ -46,9 +51,9 @@ class PasswordWindow extends JFrame implements ActionListener {
         panel.add(passwordCheckLabel);
         panel.add(enterButton);
 
-        passwordWindowfFrame.add(panel);
+        add(panel);
 
-        passwordWindowfFrame.setVisible(true);
+        setVisible(true);
 
     }
 
@@ -56,18 +61,32 @@ class PasswordWindow extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent ae) {
         if(ae.getActionCommand().equals("Войти")){
 
-            String enteredPassword = passwordTextField.getText();
-            if(enteredPassword.equals("newpass")){
-                passwordCheckLabel.setText("Верный пароль");
-                passwordCheckLabel.setForeground(Color.GREEN);
-                passwordTextField.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-                passwordWindowfFrame.dispose();
-            }else{
-                passwordTextField.setText("");
-                passwordCheckLabel.setText("Неверный пароль");
-                passwordCheckLabel.setForeground(Color.RED);
-                passwordTextField.setBorder(BorderFactory.createLineBorder(Color.RED));
+            try {
+
+                String enteredPassword = passwordTextField.getText();
+
+
+                Scanner hashIn = new Scanner(new File(PATH));
+                int hcodePassFile = hashIn.nextInt();
+
+
+                if(enteredPassword.concat(USERNAME).hashCode() == hcodePassFile){
+                    passwordCheckLabel.setText("Верный пароль");
+                    passwordCheckLabel.setForeground(Color.GREEN);
+                    passwordTextField.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                    dispose();
+                    TreeSelectionModelTest tree = new TreeSelectionModelTest();
+                }else{
+                    passwordTextField.setText("");
+                    passwordCheckLabel.setText("Неверный пароль");
+                    passwordCheckLabel.setForeground(Color.RED);
+                    passwordTextField.setBorder(BorderFactory.createLineBorder(Color.RED));
+                }
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
+
         }else {
             //passwordCheckLabel.setText("Введите пароль");
             //passwordCheckLabel.;
