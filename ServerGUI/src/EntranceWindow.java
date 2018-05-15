@@ -8,5 +8,8 @@ public class EntranceWindow {
                 new PasswordWindow();
             }
         });
+
+
+
     }
 }
