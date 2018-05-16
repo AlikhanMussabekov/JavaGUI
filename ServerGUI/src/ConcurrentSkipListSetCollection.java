@@ -182,4 +182,9 @@ class ConcurrentSkipListSetCollection implements Serializable {
         return curSet;
     }
 
+    public void removeElement(Citizens selectedCitizen){
+        System.out.println(types.remove(selectedCitizen));
+        System.out.println("removed");
+    }
+
 }

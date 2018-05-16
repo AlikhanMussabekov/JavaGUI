@@ -1,7 +1,9 @@
+import java.awt.*;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 public class Citizens implements Serializable{
     private String name;
@@ -10,6 +12,16 @@ public class Citizens implements Serializable{
     private Date date = new Date();
     private String city = "Санкт-Петербург";
     private String err = "";
+
+    public Color getColor() {
+        return color;
+    }
+
+    Random rand = new Random();
+    float r = rand.nextFloat();
+    float g = rand.nextFloat();
+    float b = rand.nextFloat();
+    Color color = new Color(r, g, b);
 
     public String getErr() {
         return err;
@@ -67,5 +79,10 @@ public class Citizens implements Serializable{
             System.out.printf("%s, %d, %s, %s \n", getName(), getAge(), getCity(), getDate());
         else
             System.out.println(err);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

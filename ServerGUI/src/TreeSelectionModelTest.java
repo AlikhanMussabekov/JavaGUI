@@ -10,7 +10,8 @@ public class TreeSelectionModelTest extends JFrame
 {
 
     // Текстовое поле для представления пути
-    private JTextArea  taSelection = new JTextArea(7, 20);
+    //private JTextArea  taSelection = new JTextArea(7, 20);
+
     final   String     ROOT  = "Корневая запись";
 
     // Массив листьев деревьев
@@ -18,14 +19,33 @@ public class TreeSelectionModelTest extends JFrame
 
     ConcurrentSkipListSetCollection collection = new ConcurrentSkipListSetCollection();
 
-    final   String[][] leafs = new String[][]{{"Чай", "Кофе", "Коктейль", "Сок", "Морс", "Минералка"}};
+    final   String[][] leafs = new String[][]{{"Чай", "Кофе", "Коктейль", "Сок", "Морс", "Минералка", "Кофе", "Коктейль", "Сок", "Морс"
+            , "Кофе", "Коктейль", "Сок", "Морс", "Кофе", "Коктейль", "Сок", "Морс"}};
+
+
 
     public TreeSelectionModelTest()
     {
 
 
         super("TreeSelectionModes");
+        setMinimumSize(new Dimension(800,400));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu menu = new JMenu("File");
+        menu.setForeground(Color.BLACK);
+        JMenuItem read = new JMenuItem("Считать коллекцию");
+        JMenuItem save = new JMenuItem("Сохранить коллекцию");
+        menu.add(read);
+        menu.add(save);
+        menu.addSeparator();
+        JMenuItem logout = new JMenuItem("Выйти");
+        menu.add(logout);
+
+        menuBar.add(menu);
+        menuBar.setForeground(Color.GRAY);
 
         // Создание модели дерева
         TreeModel model = createTreeModel();
@@ -44,16 +64,35 @@ public class TreeSelectionModelTest extends JFrame
         tree3.addTreeSelectionListener(new SelectionListener());
 
         // Панель деревьев
-        JPanel contents = new JPanel(new GridLayout(1, 1));
+        JPanel contents = new JPanel(new GridLayout(1,2));
+        contents.setSize(new Dimension(800,300));
 
+        JPanel buttonsFrame = new JPanel(new GridLayout(1,6));
+        buttonsFrame.setSize(new Dimension(800, 100));
+
+        JButton editElement = new JButton("editElement");
+        JButton removeElement = new JButton("removeElement");
+        JButton addIfMax = new JButton("addIfMax");
+        JButton addIfMin = new JButton("addIfMin");
+        JButton removeGreater = new JButton("removeGreater");
+        JButton addElement = new JButton("addElement");
+
+        buttonsFrame.add(addElement);
+        buttonsFrame.add(editElement);
+        buttonsFrame.add(removeElement);
+        buttonsFrame.add(addIfMax);
+        buttonsFrame.add(addIfMin);
+        buttonsFrame.add(removeGreater);
+
+
+        setJMenuBar(menuBar);
         // Размещение деревьев в интерфейсе
         contents.add(new JScrollPane(tree3));
-        getContentPane().add(contents);
-
+        //getContentPane().add(contents);
+        add(contents);
         // Размещение текстового поля в нижней части интерфейса
-        getContentPane().add(new JScrollPane(taSelection), BorderLayout.SOUTH);
-        setSize(500, 300);
-
+        //getContentPane().add(buttonsFrame, BorderLayout.SOUTH);
+        add(buttonsFrame, BorderLayout.SOUTH);
         // Вывод окна на экран
         setVisible(true);
     }
@@ -85,7 +124,7 @@ public class TreeSelectionModelTest extends JFrame
     {
         public void valueChanged(TreeSelectionEvent e)
         {
-            if (taSelection.getText().length() > 0)
+            /*if (taSelection.getText().length() > 0)
                 taSelection.append("-----------------------------------\n");
             // Источник события - дерево
             JTree tree = (JTree)e.getSource();
@@ -115,15 +154,15 @@ public class TreeSelectionModelTest extends JFrame
                 }
                 text += "\n";
                 taSelection.append(text);
-            }
+            }*/
         }
     }
 
 
-    /*public static void main(String[] args) {
+    public static void main(String[] args) {
 
         new TreeSelectionModelTest();
     }
-*/
+
 
 }

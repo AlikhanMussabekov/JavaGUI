@@ -3,8 +3,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,9 +12,11 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class MultipleUserServer {
-    public static final int PORT = 1488;
+    private static final int PORT = 1488;
     private static final String USERNAME = ".user.name";
     private static final String PATH = "/programming/Java/lab5/.password";
+
+    private static ConcurrentSkipListSetCollection curSet = new ConcurrentSkipListSetCollection();
 
 
     private static class ServerGUI extends JFrame implements ActionListener {
@@ -23,17 +24,16 @@ public class MultipleUserServer {
         JTextField passwordTextField;
         JLabel passwordCheckLabel;
         JFrame loginFrame;
+        JFrame mainFrame;
+        TreeModel treeModel;
+        JTree tree3;
 
-        JTextArea taSelection = new JTextArea(7, 20);
-        final String ROOT = "Корневая запись";
+        private Citizens selectedCitizen;
+        private int selectedCitizenIndex;
 
-        // Массив листьев деревьев
-        final String[] nodes = new String[]{"Жители"};
+        final String ROOT = "Жители";
 
         ConcurrentSkipListSetCollection collection = new ConcurrentSkipListSetCollection();
-
-        final String[][] leafs = new String[][]{{"Чай", "Кофе", "Коктейль", "Сок", "Морс", "Минералка"}};
-
 
 
         private ServerGUI() {
@@ -41,12 +41,14 @@ public class MultipleUserServer {
             login();
         }
 
-        public void login(){
+        private void login(){
 
             loginFrame = new JFrame("Вход");
 
+            loginFrame.setLocationByPlatform(true);
+
             loginFrame.setSize(300,150);
-            loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            loginFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             loginFrame.setMinimumSize(new Dimension(300,150));
 
             JPanel panel = new JPanel();
@@ -80,7 +82,118 @@ public class MultipleUserServer {
 
             loginFrame.add(panel);
 
+            loginFrame.pack();
+            loginFrame.setLocationRelativeTo(null);
             loginFrame.setVisible(true);
+        }
+
+
+
+        private void init() {
+            mainFrame = new JFrame("Сервер");
+
+            mainFrame.setLocationByPlatform(true);
+
+            mainFrame.setMinimumSize(new Dimension(1200,400));
+            mainFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+            JMenuBar menuBar = new JMenuBar();
+
+            JMenu menu = new JMenu("File");
+            menu.setForeground(Color.BLACK);
+            JMenuItem read = new JMenuItem("Считать коллекцию");
+            JMenuItem save = new JMenuItem("Сохранить коллекцию");
+            menu.add(read);
+            menu.add(save);
+            menu.addSeparator();
+            JMenuItem logout = new JMenuItem("Выйти");
+
+            menu.add(logout);
+
+            read.addActionListener(this);
+            save.addActionListener(this);
+            logout.addActionListener(this);
+
+            menuBar.add(menu);
+            menuBar.setForeground(Color.GRAY);
+
+            treeModel = createTreeModel();
+
+            // Дерево с выделением прерывных интервалов
+            tree3 = new JTree(treeModel);
+
+            // Подключение моделей выделения
+            tree3.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+            // Подключаем слушателя выделения
+            tree3.addTreeSelectionListener(new SelectionListener());
+
+            // Панель деревьев
+            JPanel contents = new JPanel(new GridLayout(1,2));
+
+            JPanel buttonsFrame = new JPanel(new GridLayout(1,6));
+
+            JButton addElement = new JButton("Добавить элемент");
+            JButton editElement = new JButton("Редактировать элемент");
+            JButton removeElement = new JButton("Удалить элемент");
+            JButton addIfMax = new JButton("Добавить максимальный");
+            JButton addIfMin = new JButton("Добавить минимальный");
+            JButton removeGreater = new JButton("Удалить больше, чем");
+
+            addElement.addActionListener(this);
+            editElement.addActionListener(this);
+            removeElement.addActionListener(this);
+            addIfMax.addActionListener(this);
+            addIfMin.addActionListener(this);
+            removeGreater.addActionListener(this);
+
+
+            buttonsFrame.add(addElement);
+            buttonsFrame.add(editElement);
+            buttonsFrame.add(removeElement);
+            buttonsFrame.add(addIfMax);
+            buttonsFrame.add(addIfMin);
+            buttonsFrame.add(removeGreater);
+
+
+            mainFrame.setJMenuBar(menuBar);
+            // Размещение деревьев в интерфейсе
+            contents.add(new JScrollPane(tree3));
+            //getContentPane().add(contents);
+            mainFrame.add(contents);
+            // Размещение текстового поля в нижней части интерфейса
+            //getContentPane().add(buttonsFrame, BorderLayout.SOUTH);
+            mainFrame.add(buttonsFrame, BorderLayout.SOUTH);
+            // Вывод окна на экран
+
+            mainFrame.pack();
+            mainFrame.setLocationRelativeTo(loginFrame);
+            mainFrame.setVisible(true);
+
+            mainFrame.addWindowListener(new WindowAdapter() {
+
+
+                @Override
+                public void windowDeactivated(WindowEvent wEvt) {
+                    //((JFrame)wEvt.getSource()).setBackground(Color.DARK_GRAY);
+                    /*
+
+                    ЗАТЕМНЕНИЕ ОСНОВНОГО ОКНА
+
+                     */
+                }
+
+                @Override
+                public void windowActivated(WindowEvent wEvt) {
+                    //((JFrame)wEvt.getSource()).setBackground(Color.WHITE);
+                    /*
+
+                    ЗАТЕМНЕНИЕ ОСНОВНОГО ОКНА
+
+                     */
+                }
+            });
+
         }
 
         @Override
@@ -113,45 +226,43 @@ public class MultipleUserServer {
                     e.printStackTrace();
                 }
 
+            }else if (ae.getActionCommand().equals("Считать коллекцию")){
+
+                try {
+                    curSet.readElements();
+                    new InformationPane("Коллекция успешно считана",loginFrame, "OK");
+
+                }catch (Exception e){
+                    new InformationPane("Произошла ошибка", loginFrame, "ERROR");
+                }
+
+            }else if (ae.getActionCommand().equals("Сохранить коллекцию")){
+
+                try {
+                    curSet.save();
+                    new InformationPane("Коллекция успешно сохранена", loginFrame, "OK");
+
+                } catch (IOException e) {
+                    new InformationPane("Произошла ошибка", loginFrame, "ERROR");
+                }
+
+            }else if (ae.getActionCommand().equals("Выйти")){
+
+                mainFrame.dispose();
+                login();
+
+            }else if (ae.getActionCommand().equals("Удалить элемент")){
+
+                curSet.removeElement(selectedCitizen);
+                new InformationPane("Элемент успешно удален", loginFrame, "OK");
+                DefaultTreeModel model = (DefaultTreeModel)tree3.getModel();
+                DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+                root.remove(selectedCitizenIndex);
+                model.reload();
+
+            }else if (ae.getActionCommand().equals("Добавить элемент")) {
+                new NewCitizenAddPane(loginFrame);
             }
-        }
-
-        private void init() {
-            JFrame mainFrame = new JFrame("Сервер");
-
-
-            mainFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-            // Создание модели дерева
-            TreeModel model = createTreeModel();
-
-            // Дерево с выделением прерывных интервалов
-            JTree tree3 = new JTree(model);
-
-            // Определение отдельной модели выделения
-            TreeSelectionModel selModel = new DefaultTreeSelectionModel();
-            selModel.setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-
-            // Подключение моделей выделения
-            tree3.setSelectionModel(selModel);
-
-            // Подключаем слушателя выделения
-            tree3.addTreeSelectionListener(new SelectionListener());
-
-            // Панель деревьев
-            JPanel contents = new JPanel(new GridLayout(1, 1));
-
-            // Размещение деревьев в интерфейсе
-            contents.add(new JScrollPane(tree3));
-            mainFrame.getContentPane().add(contents);
-
-            // Размещение текстового поля в нижней части интерфейса
-            mainFrame.getContentPane().add(new JScrollPane(taSelection), BorderLayout.SOUTH);
-            mainFrame.setSize(500, 300);
-
-            // Вывод окна на экран
-            mainFrame.setVisible(true);
-
         }
 
                 // Иерархическая модель данных TreeModel для деревьев
@@ -160,15 +271,12 @@ public class MultipleUserServer {
                 // Корневой узел дерева
                 DefaultMutableTreeNode root = new DefaultMutableTreeNode(ROOT);
 
-                // Добавление ветвей - потомков 1-го уровня
-                DefaultMutableTreeNode citizens = new DefaultMutableTreeNode(nodes[0]);
+                // Добавление листьев
+                for ( Citizens curCitizen: curSet.returnObjects()){
+                    DefaultMutableTreeNode citizenNode = new DefaultMutableTreeNode(curCitizen);
 
-                // Добавление ветвей к корневой записи
-                root.add(citizens);
-
-                // Добавление листьев - потомков 2-го уровня
-                for ( int i = 0; i < leafs[0].length; i++)
-                    citizens.add(new DefaultMutableTreeNode(leafs[0][i], false));
+                    root.add(citizenNode);
+                }
 
                 // Создание стандартной модели
                 return new DefaultTreeModel(root);
@@ -178,38 +286,18 @@ public class MultipleUserServer {
             // Слушатель выделения узла в дереве
             class SelectionListener implements TreeSelectionListener
             {
-                public void valueChanged(TreeSelectionEvent e)
+                public void valueChanged(TreeSelectionEvent se)
                 {
-                    if (taSelection.getText().length() > 0)
-                        taSelection.append("-----------------------------------\n");
-                    // Источник события - дерево
-                    JTree tree = (JTree)e.getSource();
+                    JTree tree = (JTree) se.getSource();
+                    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
+                            .getLastSelectedPathComponent();
 
-                    // Объекты-пути ко всем выделенным узлам дерева
-                    TreePath[] paths = e.getPaths();
-                    taSelection.append(String.format("Изменений в выделении узлов : %d\n", paths.length));
-                    // Список выделенных элементов в пути
-                    TreePath[] selected = tree.getSelectionPaths();
-                    int[] rows = tree.getSelectionRows();
-                    // Выделенные узлы
-                    for (int i = 0; i < selected.length; i++) {
-                        taSelection.append(String.format("Выделен узел : %s  (строка %d)\n",
-                                selected[i].getLastPathComponent(), rows[i]));
-                    }
-                    // Отображение полных путей в дереве для выделенных узлов
-                    for (int j = 0; j < selected.length; j++) {
-                        TreePath path = selected[j];
-                        Object[] nodes = path.getPath();
-                        String text = "ThreePath : ";
-                        for (int i = 0; i < nodes.length; i++) {
-                            // Путь к выделенному узлу
-                            DefaultMutableTreeNode node = (DefaultMutableTreeNode)nodes[i];
-                            if (i > 0)
-                                text += " >> ";
-                            text += String.format("(%d) ", i) + node.getUserObject();
-                        }
-                        text += "\n";
-                        taSelection.append(text);
+                    Citizens selectedNodeName = (Citizens) selectedNode.getUserObject();
+
+                    if (selectedNode.isLeaf()) {
+                        selectedCitizen = selectedNodeName;
+                        selectedCitizenIndex = selectedNode.getParent().getIndex(selectedNode);
+                        System.out.println(selectedCitizenIndex);
                     }
                 }
             }
@@ -217,19 +305,11 @@ public class MultipleUserServer {
 
     public static void main(String[] args) throws ClassNotFoundException {
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ServerGUI();
-            }
-        });
+        SwingUtilities.invokeLater(ServerGUI::new);
 
         ServerSocket serverSocket = null;
         Socket socket = null;
 
-        ConcurrentSkipListSetCollection curSet = new ConcurrentSkipListSetCollection();
-        JsonCommandParser parser = new JsonCommandParser();
-        Scanner cmdScanner;
 
         String pathStr = null;
         String check = null;
