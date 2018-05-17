@@ -1,8 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -92,11 +88,9 @@ public class MultipleUserServer {
             mainFrame.setLocationByPlatform(true);
 
             mainFrame.setMinimumSize(new Dimension(1200,400));
-            mainFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+            mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
             treePanel = new DynamicTree();
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
             JMenuBar menuBar = new JMenuBar();
 
@@ -178,7 +172,7 @@ public class MultipleUserServer {
 
         }
 
-        public void add(){
+        void add(){
             JFrame addFrame;
 
             JLabel nameLabel = new JLabel("Название:");
@@ -216,44 +210,41 @@ public class MultipleUserServer {
             submitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             checkLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            submitButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (nameTF.getText().equals("") && ageTF.getText().equals("")){
-                        checkLabel.setText("Заполните поля");
-                        checkLabel.setForeground(Color.RED);
-                        nameTF.setBorder(BorderFactory.createLineBorder(Color.RED));
-                        ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
-                    }else if (nameTF.getText().equals("")){
-                        checkLabel.setText("Заполните поле");
-                        checkLabel.setForeground(Color.RED);
-                        nameTF.setBorder(BorderFactory.createLineBorder(Color.RED));
-                        ageTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                    }else if (ageTF.getText().equals("")){
-                        checkLabel.setText("Заполните поле");
+            submitButton.addActionListener(e -> {
+                if (nameTF.getText().equals("") && ageTF.getText().equals("")){
+                    checkLabel.setText("Заполните поля");
+                    checkLabel.setForeground(Color.RED);
+                    nameTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                    ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                }else if (nameTF.getText().equals("")){
+                    checkLabel.setText("Заполните поле");
+                    checkLabel.setForeground(Color.RED);
+                    nameTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                    ageTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                }else if (ageTF.getText().equals("")){
+                    checkLabel.setText("Заполните поле");
+                    checkLabel.setForeground(Color.RED);
+                    nameTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                }else {
+
+                    try {
+                        String name = nameTF.getText();
+                        int age = Integer.valueOf(ageTF.getText());
+
+                        Citizens addedCitizen = new Citizens(name,age);
+
+                        curSet.add_element(addedCitizen);
+                        new InformationPane("Элемент успешно добавлен", mainFrame, "OK");
+
+                        treePanel.addObject(addedCitizen);
+                        addFrame.dispose();
+
+                    }catch(NumberFormatException ex){
+                        checkLabel.setText("Введите число");
                         checkLabel.setForeground(Color.RED);
                         nameTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
-                    }else {
-
-                        try {
-                            String name = nameTF.getText();
-                            int age = Integer.valueOf(ageTF.getText());
-
-                            Citizens addedCitizen = new Citizens(name,age);
-
-                            curSet.add_element(addedCitizen);
-                            new InformationPane("Элемент успешно добавлен", mainFrame, "OK");
-
-                            treePanel.addObject(addedCitizen);
-                            addFrame.dispose();
-
-                        }catch(NumberFormatException ex){
-                            checkLabel.setText("Введите число");
-                            checkLabel.setForeground(Color.RED);
-                            nameTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                            ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
-                        }
                     }
                 }
             });
@@ -348,18 +339,20 @@ public class MultipleUserServer {
                 add();
 
             }else if (ae.getActionCommand().equals("Редактировать элемент")){
-
+                /*
+                toDo
+                 */
             }
         }
 
         class DynamicTree extends JPanel{
-            protected DefaultMutableTreeNode rootNode;
-            protected DefaultTreeModel treeModel;
-            protected JTree tree;
+            DefaultMutableTreeNode rootNode;
+            DefaultTreeModel treeModel;
+            JTree tree;
             private Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 
-            public DynamicTree() {
+            DynamicTree() {
                 super(new GridLayout(1, 0));
 
                 rootNode = new DefaultMutableTreeNode(ROOT);
@@ -374,7 +367,7 @@ public class MultipleUserServer {
                 add(scrollPane);
             }
 
-            public void removeCurrentNode() {
+            void removeCurrentNode() {
                 TreePath currentSelection = tree.getSelectionPath();
                 if (currentSelection != null) {
                     DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) (currentSelection
@@ -389,7 +382,7 @@ public class MultipleUserServer {
                 toolkit.beep();
             }
 
-            public Citizens getCurrentCitizen() {
+            Citizens getCurrentCitizen() {
 
                 DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
                         .getLastSelectedPathComponent();
@@ -397,14 +390,14 @@ public class MultipleUserServer {
                 return (Citizens) selectedNode.getUserObject();
             }
 
-            public DefaultMutableTreeNode addObject(Citizens child) {
+            DefaultMutableTreeNode addObject(Citizens child) {
                 DefaultMutableTreeNode parentNode = rootNode;
 
                 return addObject(parentNode, child, true);
             }
 
 
-            public DefaultMutableTreeNode addObject(DefaultMutableTreeNode parent,
+            DefaultMutableTreeNode addObject(DefaultMutableTreeNode parent,
                                                     Citizens child, boolean shouldBeVisible) {
                 DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
 
@@ -420,13 +413,13 @@ public class MultipleUserServer {
                 return childNode;
             }
 
-            public void clear() {
+            void clear() {
                 rootNode.removeAllChildren();
                 treeModel.reload();
             }
         }
 
-        public void populateTree(DynamicTree treePanel){
+        void populateTree(DynamicTree treePanel){
             for ( Citizens curCitizen: curSet.returnObjects()){
                 //DefaultMutableTreeNode citizenNode = new DefaultMutableTreeNode(curCitizen);
 

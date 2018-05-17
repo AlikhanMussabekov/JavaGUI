@@ -3,7 +3,6 @@ import org.json.simple.JSONObject;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -14,23 +13,21 @@ class ConcurrentSkipListSetCollection implements Serializable {
     private ConcurrentSkipListSet<Citizens> types = new ConcurrentSkipListSet<>(citizensComparator);
 
 
-    Scanner in = null;
-    static FileOutputStream out = null;
-    Scanner dataScanner = null;
-    String path = "";
+    private Scanner in = null;
+    private String path = "";
 
-    public void setPath(String path) throws FileNotFoundException {
+    void setPath(String path) throws FileNotFoundException {
 
         this.path = path;
 
         in = new Scanner(new File(path));
     }
 
-    public void readElements(){
+    void readElements(){
         int index = 0;
         while(in.hasNextLine()){
 
-            dataScanner = new Scanner(in.nextLine());
+            Scanner dataScanner = new Scanner(in.nextLine());
             dataScanner.useDelimiter(",");
             Citizens curCitizen = new Citizens();
 
@@ -54,13 +51,13 @@ class ConcurrentSkipListSetCollection implements Serializable {
         writeElements();
     }
 
-    public void writeElements(){
+    void writeElements(){
 
         System.out.println("----------------------" +
                 "\n" +
                 "----------------------");
 
-        types.stream().forEach(Citizens -> System.out.println(Citizens.getName() + " " + Citizens.getAge()));
+        types.forEach(Citizens -> System.out.println(Citizens.getName() + " " + Citizens.getAge()));
 
         /*for(Citizens type: types){
             System.out.println(type.getName() + " " + type.getAge());
@@ -72,19 +69,19 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
     }
 
-    public void save() throws IOException {
+    void save() throws IOException {
 
-        out = new FileOutputStream(path);
+        FileOutputStream out = new FileOutputStream(path);
 
         byte[] buffer;
-        String curStr = "";
+        StringBuilder curStr = new StringBuilder();
         int i = 0;
         for(Citizens type: types)
         {
             if(i!=types.size()) {
-                curStr += type.getName() + "," + type.getAge() + "\n";
+                curStr.append(type.getName()).append(",").append(type.getAge()).append("\n");
             } else
-                curStr += type.getName() + "," + type.getAge();
+                curStr.append(type.getName()).append(",").append(type.getAge());
 
             i++;
 
@@ -93,7 +90,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
         //System.out.println(buffer);
 
-        buffer = curStr.getBytes();
+        buffer = curStr.toString().getBytes();
         out.write(buffer, 0, buffer.length);
 
         out.close();
@@ -101,32 +98,22 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
     }
 
-    public void remove_greater(JSONObject jsonCommand) {
-        //System.out.println(1);
+    void remove_greater(JSONObject jsonCommand) {
         System.out.println(jsonCommand.get("name") + " " + jsonCommand.get("age"));
 
         Citizens curElement = new Citizens(jsonCommand.get("name").toString(), String.valueOf(jsonCommand.get("age")));
 
-        //SortedSet<Citizens> setGreate = types.tailSet(curElement,);
 
-        for (Iterator<Citizens> iterator = types.iterator(); iterator.hasNext();){
-            Citizens curCitizen = iterator.next();
+        types.removeIf(curCitizen -> citizensComparator.compare(curCitizen, curElement) > 0);
 
-            if (citizensComparator.compare(curCitizen, curElement) > 0){
-                iterator.remove();
-            }
-        }
-
-        //System.out.println(types.ceiling(curElement).getName() + " " + types.ceiling(curElement).getAge());
 
         writeElements();
     }
 
-    public void add_if_max(JSONObject jsonCommand) {
+    void add_if_max(JSONObject jsonCommand) {
         //System.out.println(2);
         System.out.println(jsonCommand.get("name") + " " + jsonCommand.get("age"));
 
-        Citizens maxElement = types.last();
         Citizens curElement = new Citizens(jsonCommand.get("name").toString(), String.valueOf(jsonCommand.get("age")));
 
         if (types.higher(curElement)== null){
@@ -142,7 +129,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
         writeElements();
     }
 
-    public void add_if_min(JSONObject jsonCommand) {
+    void add_if_min(JSONObject jsonCommand) {
         //System.out.println(3);
         System.out.println(jsonCommand.get("name") + " " + jsonCommand.get("age"));
 
@@ -158,7 +145,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
         writeElements();
     }
 
-    public void add_element(JSONObject jsonCommand) {
+    void add_element(JSONObject jsonCommand) {
         //System.out.println(4);
         //System.out.println(jsonCommand.get("name") + " " + jsonCommand.get("age"));
 
@@ -173,23 +160,21 @@ class ConcurrentSkipListSetCollection implements Serializable {
         }
     }
 
-    public void add_element(Citizens citizen){
+    void add_element(Citizens citizen){
         //System.out.println(citizen.getName());
         types.add(citizen);
         writeElements();
     }
 
-    public ArrayList<Citizens> returnObjects(){
+    ArrayList<Citizens> returnObjects(){
         ArrayList<Citizens> curSet = new ArrayList<>();
 
-        for(Citizens type: types){
-            curSet.add(type);
-        }
+        curSet.addAll(types);
 
         return curSet;
     }
 
-    public void removeElement(Citizens selectedCitizen){
+    void removeElement(Citizens selectedCitizen){
         System.out.println(types.remove(selectedCitizen));
         System.out.println("removed");
     }
