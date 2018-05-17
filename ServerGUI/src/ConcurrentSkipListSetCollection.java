@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 class ConcurrentSkipListSetCollection implements Serializable {
 
-    Comparator<Citizens> citizensComparator = new CitizenNameComporator();
-    ConcurrentSkipListSet<Citizens> types = new ConcurrentSkipListSet<>(citizensComparator);
+    private Comparator<Citizens> citizensComparator = new CitizenNameComporator();
+    private ConcurrentSkipListSet<Citizens> types = new ConcurrentSkipListSet<>(citizensComparator);
 
 
     Scanner in = null;
@@ -170,6 +170,12 @@ class ConcurrentSkipListSetCollection implements Serializable {
         }catch (NullPointerException e){
             System.out.println("Error...");
         }
+    }
+
+    public void add_element(Citizens citizen){
+        //System.out.println(citizen.getName());
+        types.add(citizen);
+        writeElements();
     }
 
     public ArrayList<Citizens> returnObjects(){

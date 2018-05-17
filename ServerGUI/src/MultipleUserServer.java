@@ -196,6 +196,105 @@ public class MultipleUserServer {
 
         }
 
+        public void add(){
+            JFrame addFrame;
+
+            JLabel nameLabel = new JLabel("Название:");
+            JLabel ageLabel = new JLabel("Возраст:");
+            JLabel checkLabel = new JLabel(" ");
+
+            JTextField nameTF = new JTextField(10);
+            JTextField ageTF = new JTextField(10);
+            addFrame = new JFrame("Элемент");
+            addFrame.setSize(300, 150);
+            addFrame.setResizable(false);
+            addFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            addFrame.setLocationRelativeTo(mainFrame);
+
+            JPanel contentPanel = new JPanel();
+            contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+            JPanel namePanel = new JPanel(new FlowLayout());
+            JPanel agePanel = new JPanel(new FlowLayout());
+
+            namePanel.setSize(250, 40);
+            agePanel.setSize(250, 40);
+
+
+            JButton submitButton = new JButton("Добавить");
+
+            namePanel.add(nameLabel);
+            namePanel.add(nameTF);
+
+            agePanel.add(ageLabel);
+            agePanel.add(ageTF);
+
+            namePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            ageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            submitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            checkLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            submitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (nameTF.getText().equals("") && ageTF.getText().equals("")){
+                        checkLabel.setText("Заполните поля");
+                        checkLabel.setForeground(Color.RED);
+                        nameTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                        ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                    }else if (nameTF.getText().equals("")){
+                        checkLabel.setText("Заполните поле");
+                        checkLabel.setForeground(Color.RED);
+                        nameTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                        ageTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    }else if (ageTF.getText().equals("")){
+                        checkLabel.setText("Заполните поле");
+                        checkLabel.setForeground(Color.RED);
+                        nameTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                    }else {
+
+                        try {
+                            String name = nameTF.getText();
+                            int age = Integer.valueOf(ageTF.getText());
+
+                            Citizens addedCitizen = new Citizens(name,age);
+
+                            curSet.add_element(addedCitizen);
+                            new InformationPane("Элемент успешно добавлен", mainFrame, "OK");
+
+                            updateTree("add", 0, addedCitizen );
+                            addFrame.dispose();
+
+                        }catch(NumberFormatException ex){
+                            checkLabel.setText("Введите число");
+                            checkLabel.setForeground(Color.RED);
+                            nameTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                            ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
+                        }
+                    }
+                }
+            });
+
+            contentPanel.add(namePanel);
+            contentPanel.add(agePanel);
+            contentPanel.add(checkLabel);
+            contentPanel.add(submitButton);
+
+            addFrame.add(contentPanel);
+
+            addFrame.setVisible(true);
+            //addFrame.pack();
+            addFrame.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowDeactivated(WindowEvent wEvt) {
+                    ((JFrame) wEvt.getSource()).dispose();
+                }
+
+            });
+        }
+
         @Override
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("Войти")){
@@ -231,9 +330,11 @@ public class MultipleUserServer {
                 try {
                     curSet.readElements();
                     new InformationPane("Коллекция успешно считана",loginFrame, "OK");
-
+                    mainFrame.repaint();
+                    updateTree(" ",0,null);
                 }catch (Exception e){
                     new InformationPane("Произошла ошибка", loginFrame, "ERROR");
+                    e.printStackTrace();
                 }
 
             }else if (ae.getActionCommand().equals("Сохранить коллекцию")){
@@ -255,53 +356,77 @@ public class MultipleUserServer {
 
                 curSet.removeElement(selectedCitizen);
                 new InformationPane("Элемент успешно удален", loginFrame, "OK");
-                DefaultTreeModel model = (DefaultTreeModel)tree3.getModel();
-                DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
-                root.remove(selectedCitizenIndex);
-                model.reload();
+
+                updateTree("remove", selectedCitizenIndex, null);
 
             }else if (ae.getActionCommand().equals("Добавить элемент")) {
-                new NewCitizenAddPane(loginFrame);
+                System.out.println("111d1");
+
+                add();
+
+            }else if (ae.getActionCommand().equals("Редактировать элемент")){
+
             }
         }
 
-                // Иерархическая модель данных TreeModel для деревьев
-            private TreeModel createTreeModel()
-            {
-                // Корневой узел дерева
-                DefaultMutableTreeNode root = new DefaultMutableTreeNode(ROOT);
+        private void updateTree(String type, int index, Citizens curCitizen){
 
-                // Добавление листьев
-                for ( Citizens curCitizen: curSet.returnObjects()){
-                    DefaultMutableTreeNode citizenNode = new DefaultMutableTreeNode(curCitizen);
+            DefaultTreeModel model = (DefaultTreeModel)tree3.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
 
-                    root.add(citizenNode);
-                }
-
-                // Создание стандартной модели
-                return new DefaultTreeModel(root);
+            switch(type){
+                case "add":
+                    root.add(new DefaultMutableTreeNode(curCitizen));
+                    break;
+                case "remove":
+                    root.remove(index);
+                    break;
+                default:
+                    model.reload(root);
+                    break;
             }
 
+            model.reload(root);
+            mainFrame.repaint();
+        }
 
-            // Слушатель выделения узла в дереве
-            class SelectionListener implements TreeSelectionListener
+        // Иерархическая модель данных TreeModel для деревьев
+        private TreeModel createTreeModel()
+        {
+            // Корневой узел дерева
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode(ROOT);
+
+            // Добавление листьев
+            for ( Citizens curCitizen: curSet.returnObjects()){
+                DefaultMutableTreeNode citizenNode = new DefaultMutableTreeNode(curCitizen);
+
+                root.add(citizenNode);
+            }
+
+            // Создание стандартной модели
+            return new DefaultTreeModel(root);
+        }
+
+        // Слушатель выделения узла в дереве
+        class SelectionListener implements TreeSelectionListener
+        {
+
+            public void valueChanged(TreeSelectionEvent se)
             {
-                public void valueChanged(TreeSelectionEvent se)
-                {
-                    JTree tree = (JTree) se.getSource();
-                    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
-                            .getLastSelectedPathComponent();
+                JTree tree = (JTree) se.getSource();
+                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
+                        .getLastSelectedPathComponent();
 
-                    Citizens selectedNodeName = (Citizens) selectedNode.getUserObject();
+                Citizens selectedNodeName = (Citizens) selectedNode.getUserObject();
 
-                    if (selectedNode.isLeaf()) {
-                        selectedCitizen = selectedNodeName;
-                        selectedCitizenIndex = selectedNode.getParent().getIndex(selectedNode);
-                        System.out.println(selectedCitizenIndex);
-                    }
+                if (selectedNode.isLeaf()) {
+                    selectedCitizen = selectedNodeName;
+                    selectedCitizenIndex = selectedNode.getParent().getIndex(selectedNode);
+                    System.out.println(selectedCitizenIndex);
                 }
             }
         }
+    }
 
     public static void main(String[] args) throws ClassNotFoundException {
 
