@@ -83,6 +83,6 @@ public class Citizens implements Serializable{
 
     @Override
     public String toString() {
-        return name;
+        return name + " " + age;
     }
 }

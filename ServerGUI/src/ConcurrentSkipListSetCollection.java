@@ -27,7 +27,6 @@ class ConcurrentSkipListSetCollection implements Serializable {
     }
 
     public void readElements(){
-
         int index = 0;
         while(in.hasNextLine()){
 
@@ -51,7 +50,8 @@ class ConcurrentSkipListSetCollection implements Serializable {
             types.add(curCitizen);
             //System.out.println(in.next() + " " + in.next());
         }
-        in.close();
+
+        writeElements();
     }
 
     public void writeElements(){
@@ -97,6 +97,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
         out.write(buffer, 0, buffer.length);
 
         out.close();
+        //in.close();
 
     }
 
