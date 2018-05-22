@@ -23,6 +23,40 @@ class ConcurrentSkipListSetCollection implements Serializable {
         in = new Scanner(new File(path));
     }
 
+    boolean lower(Citizens addedCitizen){
+        if (types.lower(addedCitizen) == null){
+            types.add(addedCitizen);
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    boolean higher(Citizens addedCitizen){
+        if (types.higher(addedCitizen) == null){
+            types.add(addedCitizen);
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    boolean contains(Citizens addedCitizen){
+        return types.contains(addedCitizen);
+    }
+
+    ArrayList<Citizens> removeGreater(Citizens addedCitizen){
+
+        ArrayList<Citizens> curArray = new ArrayList<>();
+
+        while(types.higher(addedCitizen)!= null){
+            curArray.add(types.higher(addedCitizen));
+            types.remove(types.higher(addedCitizen));
+        }
+
+        return curArray;
+    }
+
     void readElements(){
         int index = 0;
         while(in.hasNextLine()){

@@ -1,4 +1,8 @@
+import com.sun.xml.internal.bind.v2.TODO;
+
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -7,31 +11,47 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MultipleUserServer {
     private static final int PORT = 1488;
     private static final String USERNAME = ".user.name";
     private static final String PATH = "/programming/Java/lab5/.password";
-
+    private static final String ROOT = "Жители";
     private static ConcurrentSkipListSetCollection curSet = new ConcurrentSkipListSetCollection();
 
 
-    private static class ServerGUI extends JFrame implements ActionListener {
+    static class ServerGUI extends JFrame implements ActionListener {
 
         JTextField passwordTextField;
         JLabel passwordCheckLabel;
         JFrame loginFrame;
-        JFrame mainFrame;
+        static JFrame mainFrame;
         DynamicTree treePanel;
-
-        final String ROOT = "Жители";
-
-
+        Citizens selectedCitizen;
+        CommandType commandType;
 
         private ServerGUI() {
             super("Сервер");
             login();
+        }
+
+        void darkenFrame(){
+            mainFrame.getRootPane().setGlassPane(new JComponent() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    g.setColor(new Color(0,0,0,100));
+                    g.fillRect(0,0, mainFrame.getWidth(), mainFrame.getHeight());
+                    super.paintComponent(g);
+                }
+            });
+
+            mainFrame.getGlassPane().setVisible(true);
+        }
+
+        static void resetFrame(){
+            mainFrame.getGlassPane().setVisible(false);
         }
 
         private void login(){
@@ -109,6 +129,24 @@ public class MultipleUserServer {
             save.addActionListener(this);
             logout.addActionListener(this);
 
+            menu.addMenuListener(new MenuListener() {
+                @Override
+                public void menuSelected(MenuEvent e) {
+
+                }
+
+                @Override
+                public void menuDeselected(MenuEvent e) {
+                    // TODO: 5/22/18 анимация на deselect menu
+                    System.out.println("menu deselected");
+                }
+
+                @Override
+                public void menuCanceled(MenuEvent e) {
+                    System.out.println("menu canceled");
+                }
+            });
+
             menuBar.add(menu);
             menuBar.setForeground(Color.GRAY);
 
@@ -146,30 +184,6 @@ public class MultipleUserServer {
             mainFrame.setLocationRelativeTo(loginFrame);
             mainFrame.setVisible(true);
 
-            mainFrame.addWindowListener(new WindowAdapter() {
-
-
-                @Override
-                public void windowDeactivated(WindowEvent wEvt) {
-                    //((JFrame)wEvt.getSource()).setBackground(Color.DARK_GRAY);
-                    /*
-
-                    ЗАТЕМНЕНИЕ ОСНОВНОГО ОКНА
-
-                     */
-                }
-
-                @Override
-                public void windowActivated(WindowEvent wEvt) {
-                    //((JFrame)wEvt.getSource()).setBackground(Color.WHITE);
-                    /*
-
-                    ЗАТЕМНЕНИЕ ОСНОВНОГО ОКНА
-
-                     */
-                }
-            });
-
         }
 
         void add(){
@@ -186,6 +200,7 @@ public class MultipleUserServer {
             addFrame.setResizable(false);
             addFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             addFrame.setLocationRelativeTo(mainFrame);
+
 
             JPanel contentPanel = new JPanel();
             contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -204,6 +219,22 @@ public class MultipleUserServer {
 
             agePanel.add(ageLabel);
             agePanel.add(ageTF);
+
+            switch(commandType){
+                case EDIT:
+                    nameTF.setText(selectedCitizen.getName());
+                    ageTF.setText(String.valueOf(selectedCitizen.getAge()));
+                    submitButton.setText("Редактировать");
+                    break;
+
+                case REMOVEGREATER:
+                    submitButton.setText("Удалить");
+                    break;
+
+                default:
+                    break;
+            }
+
 
             namePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             ageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -234,10 +265,65 @@ public class MultipleUserServer {
 
                         Citizens addedCitizen = new Citizens(name,age);
 
-                        curSet.add_element(addedCitizen);
-                        new InformationPane("Элемент успешно добавлен", mainFrame, "OK");
+                        switch (commandType){
+                            case EDIT:
+                                new InformationPane("Элемент успешно отредактирован", mainFrame, "OK");
 
-                        treePanel.addObject(addedCitizen);
+                                selectedCitizen.setName(name);
+                                selectedCitizen.setAge(age);
+
+                                break;
+
+                            case ADDMIN:
+                                if(curSet.lower(addedCitizen)){
+                                    new InformationPane("Минимальный элемент успешно добавлен", mainFrame, "OK");
+                                }else{
+                                    new InformationPane("Элемент не является минимальным", mainFrame, "ERROR");
+                                }
+
+                                curSet.add_element(addedCitizen);
+                                treePanel.addObject(addedCitizen);
+
+                                break;
+
+                            case ADDMAX:
+                                if(curSet.higher(addedCitizen)){
+                                    new InformationPane("Максимальный элемент успешно добавлен", mainFrame, "OK");
+                                }else{
+                                    new InformationPane("Элемент не является максимальным", mainFrame, "ERROR");
+                                }
+
+                                curSet.add_element(addedCitizen);
+                                treePanel.addObject(addedCitizen);
+
+                                break;
+
+                            case REMOVEGREATER:
+                                ArrayList<Citizens> removed= curSet.removeGreater(addedCitizen);
+
+                                for (Citizens removedCitizen: removed ){
+                                    treePanel.remove(removedCitizen);
+                                }
+
+                                new InformationPane("Элементы успешно удалены", mainFrame, "OK");
+
+                                curSet.removeElement(treePanel.getCurrentCitizen());
+
+                                break;
+
+                            default:
+
+                                if (!curSet.contains(addedCitizen)) {
+
+                                    curSet.add_element(addedCitizen);
+                                    treePanel.addObject(addedCitizen);
+                                    new InformationPane("Элемент успешно добавлен", mainFrame, "OK");
+                                }else {
+                                    new InformationPane("Элемент уже существует", mainFrame, "ERROR");
+                                }
+                                break;
+                        }
+
                         addFrame.dispose();
 
                     }catch(NumberFormatException ex){
@@ -246,6 +332,21 @@ public class MultipleUserServer {
                         nameTF.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         ageTF.setBorder(BorderFactory.createLineBorder(Color.RED));
                     }
+                }
+            });
+
+            addFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowIconified(WindowEvent wEvt) {
+                   resetFrame();
+                    ((JFrame)wEvt.getSource()).dispose();
+
+                }
+
+                @Override
+                public void windowDeactivated(WindowEvent wEvt) {
+                   resetFrame();
+                    ((JFrame)wEvt.getSource()).dispose();
                 }
             });
 
@@ -302,6 +403,7 @@ public class MultipleUserServer {
 
                 try {
                     curSet.readElements();
+                    darkenFrame();
                     new InformationPane("Коллекция успешно считана",loginFrame, "OK");
                     treePanel.clear();
                     populateTree(treePanel);
@@ -314,6 +416,7 @@ public class MultipleUserServer {
             }else if (ae.getActionCommand().equals("Сохранить коллекцию")){
 
                 try {
+                    darkenFrame();
                     curSet.save();
                     new InformationPane("Коллекция успешно сохранена", loginFrame, "OK");
 
@@ -329,19 +432,38 @@ public class MultipleUserServer {
             }else if (ae.getActionCommand().equals("Удалить элемент")){
 
                 curSet.removeElement(treePanel.getCurrentCitizen());
+                darkenFrame();
                 new InformationPane("Элемент успешно удален", loginFrame, "OK");
 
                 treePanel.removeCurrentNode();
 
             }else if (ae.getActionCommand().equals("Добавить элемент")) {
-                System.out.println("111d1");
 
+                commandType = CommandType.ADD;
                 add();
+                darkenFrame();
 
             }else if (ae.getActionCommand().equals("Редактировать элемент")){
-                /*
-                toDo
-                 */
+                selectedCitizen = treePanel.getCurrentCitizen();
+                commandType = CommandType.EDIT;
+                add();
+                darkenFrame();
+
+            }else if (ae.getActionCommand().equals("Добавить максимальный")){
+
+                commandType = CommandType.ADDMAX;
+                add();
+                darkenFrame();
+            }else if (ae.getActionCommand().equals("Добавить минимальный")){
+
+                commandType = CommandType.ADDMIN;
+                add();
+                darkenFrame();
+            }else if (ae.getActionCommand().equals("Удалить больше, чем")){
+
+                commandType = CommandType.REMOVEGREATER;
+                add();
+                darkenFrame();
             }
         }
 
@@ -380,6 +502,10 @@ public class MultipleUserServer {
                 }
 
                 toolkit.beep();
+            }
+
+            void remove(Citizens removedCitizen){
+                // TODO: 5/22/18 динамическое удаление элементов в дереве
             }
 
             Citizens getCurrentCitizen() {
@@ -421,11 +547,9 @@ public class MultipleUserServer {
 
         void populateTree(DynamicTree treePanel){
             for ( Citizens curCitizen: curSet.returnObjects()){
-                //DefaultMutableTreeNode citizenNode = new DefaultMutableTreeNode(curCitizen);
 
                 treePanel.addObject(curCitizen);
             }
-
         }
 
     }

@@ -35,6 +35,7 @@ public class InformationPane {
             @Override
             public void actionPerformed(ActionEvent e) {
                 infoFrame.dispose();
+                MultipleUserServer.ServerGUI.resetFrame();
             }
         });
 
@@ -56,12 +57,16 @@ public class InformationPane {
 
             @Override
             public void windowIconified(WindowEvent wEvt) {
+                MultipleUserServer.ServerGUI.resetFrame();
                 ((JFrame)wEvt.getSource()).dispose();
+
             }
 
             @Override
             public void windowDeactivated(WindowEvent wEvt) {
+                MultipleUserServer.ServerGUI.resetFrame();
                 ((JFrame)wEvt.getSource()).dispose();
+
             }
 
         });
