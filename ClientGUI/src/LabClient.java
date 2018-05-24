@@ -1,7 +1,6 @@
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.OutputStream;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -26,19 +25,7 @@ public class LabClient {
 
                 if (socket.isConnected()) {
 
-                    try (OutputStream out = socket.getOutputStream();
-                         ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
-
-                        String line;
-
-                        //System.out.println(1);
-
-                        line = consoleInput.nextLine();
-
-                        //System.out.println(2);
-
-                        out.write(line.getBytes());
-                        out.flush();
+                    try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
                         Object input = in.readObject();
 
@@ -48,9 +35,10 @@ public class LabClient {
 
                             mainSet.forEach(Citizens -> Citizens.printInfo());
 
+                            new ClientGUI(mainSet);
+                            break;
+
                         } catch (ClassCastException e) {
-                            //e.printStackTrace();
-                            //System.out.println("Ошибка");
 
                             String error = (String) input;
 
@@ -64,9 +52,7 @@ public class LabClient {
 
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
-                    }catch (EOFException e){
-
-                    }catch (SocketException e){
+                    }catch (EOFException | SocketException ignored){
 
                     }
                 }

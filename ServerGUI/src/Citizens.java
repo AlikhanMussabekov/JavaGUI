@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2018. Alikhan Mussabekov
+ * Gmail: alikhanmussabekov@gmail.com
+ */
+
 import java.awt.*;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -10,8 +15,57 @@ public class Citizens implements Serializable{
     private int age;
     DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     private Date date = new Date();
-    private String city = "Санкт-Петербург";
+    private String city;
     private String err = "";
+
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setCity() {
+        if((int)(Math.random()*2) == 1){
+            city = "Санкт-Петербург";
+        }else {
+            city = "Москва";
+        }
+    }
+
+    public Random getRand() {
+        return rand;
+    }
+
+    public void setRand(Random rand) {
+        this.rand = rand;
+    }
+
+    public float getR() {
+        return r;
+    }
+
+    public void setR(float r) {
+        this.r = r;
+    }
+
+    public float getG() {
+        return g;
+    }
+
+    public void setG(float g) {
+        this.g = g;
+    }
+
+    public float getB() {
+        return b;
+    }
+
+    public void setB(float b) {
+        this.b = b;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
 
     public Color getColor() {
         return color;
@@ -32,17 +86,19 @@ public class Citizens implements Serializable{
     }
 
     public Citizens(){
-
+        setCity();
     }
 
     public Citizens(String name, int age) {
         this.name = name;
         this.age = age;
+        setCity();
     }
 
     public Citizens(String name, String age) {
         this.name = name;
         this.age = Integer.parseInt(age);
+        setCity();
     }
 
     public String getDate() {

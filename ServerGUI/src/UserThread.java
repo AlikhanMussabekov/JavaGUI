@@ -30,72 +30,18 @@ public class UserThread extends Thread {
 
         try {
 
-            try(InputStream in = socket.getInputStream();
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())
+            try(ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())
             ){
 
                 if(!socket.isClosed()) {
 
                     System.out.println("Server is running...");
-                    try {
-                        Thread.sleep(4000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
 
                     try {
 
-                        byte[] buf = new byte[32 * 1024];
-                        int readBytes = in.read(buf);
+                        out.writeObject(curSet.returnObjects());
+                        out.flush();
 
-                        try {
-                            String line = new String(buf, 0, readBytes);
-                            cmdScanner = new Scanner(line);
-                            cmdScanner.useDelimiter(" ");
-                        }catch (StringIndexOutOfBoundsException e){
-                            //System.out.println("11111");
-                            //continue;
-                        }
-
-
-                        String curCmd = cmdScanner.next();
-
-                        try{
-
-                            String stringJson = cmdScanner.next();
-
-                            try {
-                                parser.nextCommand(curCmd, curSet, stringJson);
-                                //curSet.writeElements();
-
-
-                                out.writeObject(curSet.returnObjects());
-                                out.flush();
-
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            } catch (InputException e) {
-                                out.writeObject(e.info());
-                                out.flush();
-                            }catch (CommandException e){
-                                out.writeObject(e.info());
-                                out.flush();
-                            }
-
-                        }catch(NoSuchElementException e){
-                            if (curCmd.equals("stop_app")){
-                                System.out.println("Application stopped...");
-                                curSet.save();
-                                out.writeObject("stop");
-                                out.flush();
-                                //break;
-                            }else{
-                                //System.out.println(22222);
-                                out.writeObject("JSON error...");
-                                out.flush();
-                            }
-                        }
 
                     }catch(EOFException e) {
                         System.out.println("EOFException");
