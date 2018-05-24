@@ -139,6 +139,7 @@ public class MultipleUserServer {
                 public void menuDeselected(MenuEvent e) {
                     // TODO: 5/22/18 анимация на deselect menu
                     System.out.println("menu deselected");
+
                 }
 
                 @Override

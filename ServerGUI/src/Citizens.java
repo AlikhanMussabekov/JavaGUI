@@ -13,8 +13,8 @@ import java.util.Random;
 public class Citizens implements Serializable{
     private String name;
     private int age;
-    DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    private Date date = new Date();
+    public DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    public Date date = new Date();
     private String city;
     private String err = "";
 
@@ -99,6 +99,10 @@ public class Citizens implements Serializable{
         this.name = name;
         this.age = Integer.parseInt(age);
         setCity();
+    }
+
+    public Date creationDate(){
+        return date;
     }
 
     public String getDate() {

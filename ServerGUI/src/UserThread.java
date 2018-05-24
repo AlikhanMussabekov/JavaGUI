@@ -42,7 +42,6 @@ public class UserThread extends Thread {
                         out.writeObject(curSet.returnObjects());
                         out.flush();
 
-
                     }catch(EOFException e) {
                         System.out.println("EOFException");
                     }
