@@ -20,6 +20,7 @@ public class CitizenButton extends JButton implements MouseListener {
         setBorderPainted(false);
         addMouseListener(this);
         setSize(120,120);
+        setToolTipText(citizens.getName());
     }
 
     public Citizens getCitizens() {

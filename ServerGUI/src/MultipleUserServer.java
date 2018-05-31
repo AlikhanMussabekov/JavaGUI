@@ -123,6 +123,10 @@ public class MultipleUserServer {
             menu.addSeparator();
             JMenuItem logout = new JMenuItem("Выйти");
 
+            menuBar.add(read);
+            menuBar.add(save);
+            menuBar.add(logout);
+
             menu.add(logout);
 
             read.addActionListener(this);
@@ -148,7 +152,7 @@ public class MultipleUserServer {
                 }
             });
 
-            menuBar.add(menu);
+            //menuBar.add(menu);
             menuBar.setForeground(Color.GRAY);
 
 

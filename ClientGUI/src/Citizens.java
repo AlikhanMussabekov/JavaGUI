@@ -34,9 +34,11 @@ public class Citizens implements Serializable{
 
         if (newR < 0){
             newR = 0f;
-        }else if (newG>1){
+        }
+        if (newG>1){
             newG = 0.8f;
-        }else if (newB < 0){
+        }
+        if (newB < 0){
             newB = 0f;
         }
 

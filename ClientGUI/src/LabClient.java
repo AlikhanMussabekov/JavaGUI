@@ -35,7 +35,15 @@ public class LabClient {
         JCheckBox stPtrsbr = new JCheckBox("Санкт - Петербург");
         JCheckBox mscw = new JCheckBox("Москва");
         JFormattedTextField formattedTextField = new JFormattedTextField(df);
-        JSpinner spinner = new JSpinner();
+
+
+        SpinnerModel value =
+                new SpinnerNumberModel(0, //initial value
+                        0, //minimum value
+                        100, //maximum value
+                        1); //step
+
+        JSpinner spinner = new JSpinner(value);
         Timer timer;
         int counter = 0;
 
@@ -58,7 +66,7 @@ public class LabClient {
 
         private void init(){
 
-            JFrame frame = new JFrame("Клиент");
+            JFrame frame = new JFrame("Мусабеков Алихан, Мацкевич Игорь, Группа P3111");
             frame.setMinimumSize(new Dimension(1050,600));
             mainPanel = new JPanel(new GridLayout(1,2));
             animationPanel = new AnimationPanel();
@@ -184,31 +192,73 @@ public class LabClient {
         }
 
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if(e.getActionCommand().equals("Анимация") || e.getActionCommand().equals("Стоп")){
+    @Override
+    public void actionPerformed (ActionEvent e){
+        if (e.getActionCommand().equals("Анимация") || e.getActionCommand().equals("Стоп")) {
 
-                JButton buttonSource = (JButton) e.getSource();
+            JButton buttonSource = (JButton) e.getSource();
 
-                if (check) {
-                    buttonSource.setText("Анимация");
-                    buttonSource.setBackground(Color.GREEN);
-                    buttonSource.setOpaque(true);
-                    buttonSource.setBorderPainted(false);
-                    timer.stop();
-                    check = !check;
-                    for(CitizenButton button: buttonsList){
-                        button.setBackground(button.getCitizens().getColor());
-                        button.setOpaque(true);
-                        button.setBorderPainted(false);
+            if (check) {
+                buttonSource.setText("Анимация");
+                buttonSource.setBackground(Color.GREEN);
+                buttonSource.setOpaque(true);
+                buttonSource.setBorderPainted(false);
+                timer.stop();
+                check = !check;
+                for (CitizenButton button : buttonsList) {
+                    button.setBackground(button.getCitizens().getColor());
+                    button.setOpaque(true);
+                    button.setBorderPainted(false);
+                }
+            } else {
+
+                counter = 0;
+
+                buttonSource.setText("Стоп");
+                buttonSource.setBackground(Color.RED);
+                buttonSource.setOpaque(true);
+                buttonSource.setBorderPainted(false);
+
+                filteredList.clear();
+
+                //filteredList = buttonsList;
+
+                if (mscw.isSelected()) {
+                    for (CitizenButton button : buttonsList) {
+                        if (button.getCitizens().getCity().equals("Москва") &&
+                                button.getCitizens().creationDate().before((Date) formattedTextField.getValue()) &&
+                                (Integer)spinner.getValue() < button.getCitizens().getAge()) {
+                            filteredList.add(button);
+                        }
                     }
-                }else{
+                }
 
-                    counter=0;
+                if (stPtrsbr.isSelected()) {
+                    for (CitizenButton button : buttonsList) {
+                        if (button.getCitizens().getCity().equals("Санкт-Петербург") &&
+                                button.getCitizens().creationDate().before((Date) formattedTextField.getValue()) &&
+                                (Integer)spinner.getValue() < button.getCitizens().getAge()) {
+                            filteredList.add(button);
+                        }
+                    }
+                }
 
-                    filteredList.clear();
+                /*if (formattedTextField.isEditValid()) {
+                    for (CitizenButton button : filteredList) {
+                        if (button.getCitizens().creationDate().before((Date) formattedTextField.getValue())) {
+                            filteredList.remove(button);
+                        }
+                    }
+                }
+*/
+                    /*for (CitizenButton button : filteredList) {
+                        if ((Integer)spinner.getValue() < button.getCitizens().getAge()) {
+                            filteredList.remove(button);
+                        }
+                    }*/
 
-                    for(CitizenButton button: buttonsList) {
+
+                    /*for(CitizenButton button: buttonsList) {
                         if (mscw.isSelected() && button.getCitizens().getCity().equals("Москва")) {
                             filteredList.add(button);
                         } else if (stPtrsbr.isSelected() && button.getCitizens().getCity().equals("Санкт-Петербург")) {
@@ -222,20 +272,16 @@ public class LabClient {
                                 filteredList.add(button);
                             }
                         }
-                    }
-                    buttonSource.setText("Стоп");
-                    buttonSource.setBackground(Color.RED);
-                    buttonSource.setOpaque(true);
-                    buttonSource.setBorderPainted(false);
+                    }*/
 
-                    timer.start();
-                    check = !check;
-                }
-                animationPanel.repaint();
-
-
+                timer.start();
+                check = !check;
             }
+            animationPanel.repaint();
+
+
         }
+    }
 
         class AnimationPanel extends JPanel implements ActionListener{
 
