@@ -30,7 +30,6 @@ public class LabClient {
 
 
         private boolean check = false;
-        private boolean animation = false;
         private AnimationPanel animationPanel;
         private JPanel mainPanel;
         JCheckBox stPtrsbr = new JCheckBox("Санкт - Петербург");
@@ -38,16 +37,17 @@ public class LabClient {
         JFormattedTextField formattedTextField = new JFormattedTextField(df);
         JSpinner spinner = new JSpinner();
         Timer timer;
+        int counter = 0;
 
 
         private ArrayList<CitizenButton> buttonsList = new ArrayList<>();
+        private ArrayList<CitizenButton> filteredList = new ArrayList<>();
 
         ClientGUI(){
 
             update();
             for(Citizens citizens: citizensArrayList){
                 CitizenButton curButton = new CitizenButton(citizens);
-                //curButton.setLocation((int)Math.random()*10,(int)Math.random()*10);
                 System.out.println(curButton.getX() + " " + curButton.getY());
                 curButton.setBounds(curButton.getX(),curButton.getY(),curButton.getWidth(),curButton.getHeight());
                 buttonsList.add(curButton);
@@ -64,34 +64,45 @@ public class LabClient {
             animationPanel = new AnimationPanel();
             JPanel functionPanel = new JPanel();
 
+            functionPanel.setLayout(new BoxLayout(functionPanel, BoxLayout.Y_AXIS));
+
+
             JButton animate = new JButton("Анимация");
             JButton update = new JButton("Обновить");
 
-            update.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (e.getActionCommand().equals("Обновить")){
-                        update();
+            animate.setAlignmentX(Component.CENTER_ALIGNMENT);
+            update.setAlignmentX(Component.CENTER_ALIGNMENT);
+            formattedTextField.setAlignmentX(Component.CENTER_ALIGNMENT);
+            spinner.setAlignmentX(Component.CENTER_ALIGNMENT);
+            mscw.setAlignmentX(Component.CENTER_ALIGNMENT);
+            stPtrsbr.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                        for(CitizenButton button: buttonsList){
-                            animationPanel.remove(button);
-                        }
+            update.addActionListener(e -> {
+                if (e.getActionCommand().equals("Обновить")){
+                    update();
 
-                        buttonsList.clear();
-
-                        for(Citizens citizens: citizensArrayList){
-                            CitizenButton curButton = new CitizenButton(citizens);
-                            //curButton.setLocation((int)Math.random()*10,(int)Math.random()*10);
-                            System.out.println(curButton.getX() + " " + curButton.getY());
-                            curButton.setBounds(curButton.getX(),curButton.getY(),curButton.getWidth(),curButton.getHeight());
-                            buttonsList.add(curButton);
-                        }
-                        animationPanel.repaint();
-                        mainPanel.repaint();
-                        animationPanel.revalidate();
-                        mainPanel.revalidate();
-
+                    for(CitizenButton button: buttonsList){
+                        animationPanel.remove(button);
                     }
+
+                    buttonsList.clear();
+
+                    for(Citizens citizens: citizensArrayList){
+                        CitizenButton curButton = new CitizenButton(citizens);
+                        System.out.println(curButton.getX() + " " + curButton.getY());
+                        curButton.setBounds(curButton.getX(),curButton.getY(),curButton.getWidth(),curButton.getHeight());
+                        buttonsList.add(curButton);
+                    }
+
+                    animate.setText("Анимация");
+                    animate.setBackground(Color.GREEN);
+                    animate.setOpaque(true);
+                    animate.setBorderPainted(false);
+
+                    timer.stop();
+
+                    animationPanel.repaint();
+
                 }
             });
 
@@ -101,8 +112,6 @@ public class LabClient {
             animate.setOpaque(true);
             animate.setBorderPainted(false);
 
-            formattedTextField.setColumns(10);
-            spinner.setMinimumSize(new Dimension(20,20));
 
             try {
                 MaskFormatter dateMask = new MaskFormatter("####/##/##");
@@ -121,6 +130,39 @@ public class LabClient {
             mainPanel.add(animationPanel);
             mainPanel.add(functionPanel);
 
+            timer = new Timer(500, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    if(counter < 3000){
+                        for(CitizenButton button: filteredList){
+                            setNewColor(button);
+                        }
+                        animationPanel.repaint();
+                        counter += timer.getDelay();
+                    }else if (counter < 7000){
+                        for (CitizenButton button: filteredList){
+                            resetColor(button);
+                        }
+                        System.out.println("7000");
+                        animationPanel.repaint();
+                        counter += timer.getDelay();
+                    }else {
+                        timer.stop();
+                        counter = 0;
+                        for (CitizenButton button: filteredList){
+                            button.getCitizens().resetNewColor();
+                        }
+                        animate.setText("Анимация");
+                        animate.setBackground(Color.GREEN);
+                        animate.setOpaque(true);
+                        animate.setBorderPainted(false);
+                        animationPanel.repaint();
+                    }
+
+                }
+            });
 
             frame.add(mainPanel);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -129,11 +171,18 @@ public class LabClient {
             frame.setVisible(true);
 
         }
-        public void setGreenColor(JButton button){
-            button.setBackground(Color.GREEN);
+        public void setNewColor(CitizenButton button){
+            button.setBackground(button.getCitizens().getNewColor());
             button.setOpaque(true);
             button.setBorderPainted(false);
         }
+
+        public void resetColor(CitizenButton button){
+            button.setBackground(button.getCitizens().getOldColor());
+            button.setOpaque(true);
+            button.setBorderPainted(false);
+        }
+
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -154,32 +203,31 @@ public class LabClient {
                         button.setBorderPainted(false);
                     }
                 }else{
+
+                    counter=0;
+
+                    filteredList.clear();
+
+                    for(CitizenButton button: buttonsList) {
+                        if (mscw.isSelected() && button.getCitizens().getCity().equals("Москва")) {
+                            filteredList.add(button);
+                        } else if (stPtrsbr.isSelected() && button.getCitizens().getCity().equals("Санкт-Петербург")) {
+                            filteredList.add(button);
+                        } else if (formattedTextField.isEditValid()) {
+                            if (button.getCitizens().creationDate().after((Date) formattedTextField.getValue())) {
+                                filteredList.add(button);
+                            }
+                        } else if ((Integer) spinner.getValue() != 0) {
+                            if ((Integer) spinner.getValue() > button.getCitizens().getAge()) {
+                                filteredList.add(button);
+                            }
+                        }
+                    }
                     buttonSource.setText("Стоп");
                     buttonSource.setBackground(Color.RED);
                     buttonSource.setOpaque(true);
                     buttonSource.setBorderPainted(false);
-                    timer = new Timer(3000, new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            for(CitizenButton button: buttonsList) {
-                                if (mscw.isSelected() && button.getCitizens().getCity().equals("Москва")) {
-                                    setGreenColor(button);
-                                }else if (stPtrsbr.isSelected() && button.getCitizens().getCity().equals("Санкт-Петербург")){
-                                    setGreenColor(button);
-                                }else if(formattedTextField.isEditValid()){
-                                    //System.out.println(formattedTextField.getValue().getClass());
-                                    if(button.getCitizens().creationDate().after((Date) formattedTextField.getValue())){
-                                        //System.out.println("afterr");
-                                        setGreenColor(button);
-                                    }
-                                }else if ( (Integer) spinner.getValue()!=0){
-                                    if ((Integer) spinner.getValue() > button.getCitizens().getAge()){
-                                        setGreenColor(button);
-                                    }
-                                }
-                            }
-                        }
-                    });
+
                     timer.start();
                     check = !check;
                 }
@@ -203,10 +251,10 @@ public class LabClient {
 
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                /*g2d.setColor(Color.white);
+                g2d.setColor(Color.white);
                 g.fillRect(0, 0, getWidth(), getHeight());
                 g2d.setColor(Color.black);
-                g2d.drawRect(0, 0, getWidth(), getHeight());*/
+                g2d.drawRect(0, 0, getWidth(), getHeight());
 
                 for(CitizenButton button: buttonsList){
                     this.add(button);
@@ -269,6 +317,10 @@ public class LabClient {
 
                 System.out.println("Server is not responding...\n"
                 + "Please wait...");
+
+                //new InformationPane("Сервер не отвечает, подождите", null, "Error" );
+
+                JOptionPane.showMessageDialog(null, "Сервер не отвечает, попробуйте позже");
 
                 try {
                     Thread.sleep(4000);

@@ -18,6 +18,54 @@ public class Citizens implements Serializable{
     private String city;
     private String err = "";
 
+    Random rand = new Random();
+    float r = rand.nextFloat();
+    float g = rand.nextFloat();
+    float b = rand.nextFloat();
+    Color color = new Color(r, g, b);
+
+    private float newR=r,newG=g,newB=b;
+    private float rStep = r/7, gStep = (1-g) / 7, bStep = b/7;
+
+    public Color getNewColor(){
+        newR-=rStep;
+        newG+=gStep;
+        newB-=bStep;
+
+        if (newR < 0){
+            newR = 0f;
+        }else if (newG>1){
+            newG = 0.8f;
+        }else if (newB < 0){
+            newB = 0f;
+        }
+
+        return new Color(newR,newG,newB);
+    }
+
+    public Color getOldColor() {
+        newR+=rStep;
+        newG-=gStep;
+        newB+=bStep;
+
+        if (newR > r){
+            newR = r;
+        }
+        if (newG < g) {
+            newG = g;
+        }
+        if (newB > b){
+            newB = b;
+        }
+
+        return new Color(newR,newG,newB);
+    }
+
+    public void resetNewColor(){
+        newR=r;
+        newG=g;
+        newB=b;
+    }
 
     public void setDate(Date date) {
         this.date = date;
@@ -71,11 +119,8 @@ public class Citizens implements Serializable{
         return color;
     }
 
-    Random rand = new Random();
-    float r = rand.nextFloat();
-    float g = rand.nextFloat();
-    float b = rand.nextFloat();
-    Color color = new Color(r, g, b);
+
+
 
     public String getErr() {
         return err;
@@ -145,4 +190,6 @@ public class Citizens implements Serializable{
     public String toString() {
         return name + " " + age;
     }
+
+
 }
