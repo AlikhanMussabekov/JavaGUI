@@ -1,3 +1,5 @@
+import com.sun.xml.internal.bind.v2.TODO;
+
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import java.awt.*;
@@ -19,6 +21,8 @@ public class LabClient {
     private static final String HOST = "localhost";
     private static final DateFormat df = new SimpleDateFormat("yyyy/mm/dd");
     private static ArrayList<Citizens> citizensArrayList;
+    private static ResourceManager resourceManager = new ResourceManager("data","ru");
+
 
     public static void main (String[] args){
         SwingUtilities.invokeLater(ClientGUI::new);
@@ -31,10 +35,20 @@ public class LabClient {
         private boolean check = false;
         private AnimationPanel animationPanel;
         private JPanel mainPanel;
-        JCheckBox stPtrsbr = new JCheckBox("Санкт - Петербург");
-        JCheckBox mscw = new JCheckBox("Москва");
         JFormattedTextField formattedTextField = new JFormattedTextField(df);
 
+        JCheckBox stPtrsbr = new JCheckBox(resourceManager.getString("filter.city.stptrsbrg"));
+        JCheckBox mscw = new JCheckBox(resourceManager.getString("filter.city.moscow"));
+
+        JMenuItem estonian;
+        JMenuItem russian;
+        JMenuItem spanish;
+        JMenuItem ukranian;
+
+        JButton animate;
+        JButton update;
+
+        JMenu menu;
 
         SpinnerModel value =
                 new SpinnerNumberModel(0, //initial value
@@ -70,18 +84,38 @@ public class LabClient {
             animationPanel = new AnimationPanel();
             JPanel functionPanel = new JPanel();
 
+            JMenuBar menuBar = new JMenuBar();
+            menu = new JMenu(resourceManager.getString("system.language"));
+
+            estonian = new JMenuItem(resourceManager.getString("system.language.estonian"));
+            russian = new JMenuItem(resourceManager.getString("system.language.russian"));
+            spanish = new JMenuItem(resourceManager.getString("system.language.spanish"));
+            ukranian = new JMenuItem(resourceManager.getString("system.language.ukranian"));
+
+            estonian.addActionListener(this);
+            russian.addActionListener(this);
+            spanish.addActionListener(this);
+            ukranian.addActionListener(this);
+
+            menu.add(estonian);
+            menu.add(russian);
+            menu.add(spanish);
+            menu.add(ukranian);
+
+            menuBar.add(menu);
+
             functionPanel.setLayout(new BoxLayout(functionPanel, BoxLayout.Y_AXIS));
 
 
-            JButton animate = new JButton("Анимация");
-            JButton update = new JButton("Обновить коллекцию");
+            animate = new JButton(resourceManager.getString("filter.animation.start"));
+            update = new JButton(resourceManager.getString("filter.update.collection"));
 
             JPanel functionButtonsPanel = new JPanel(new FlowLayout());
             functionButtonsPanel.add(update);
             functionButtonsPanel.add(animate);
 
             update.addActionListener(e -> {
-                if (e.getActionCommand().equals("Обновить коллекцию")){
+                if (e.getActionCommand().equals(resourceManager.getString("filter.update.collection"))){
                     update();
 
                     for(CitizenButton button: buttonsList){
@@ -97,7 +131,7 @@ public class LabClient {
                         buttonsList.add(curButton);
                     }
 
-                    animate.setText("Анимация");
+                    animate.setText(resourceManager.getString("filter.animation.start"));
                     animate.setBackground(Color.GREEN);
                     animate.setOpaque(true);
                     animate.setBorderPainted(false);
@@ -162,7 +196,7 @@ public class LabClient {
                         for (CitizenButton button: filteredList){
                             button.getCitizens().resetNewColor();
                         }
-                        animate.setText("Анимация");
+                        animate.setText(resourceManager.getString("filter.animation.start"));
                         animate.setBackground(Color.GREEN);
                         animate.setOpaque(true);
                         animate.setBorderPainted(false);
@@ -172,6 +206,7 @@ public class LabClient {
                 }
             });
 
+            frame.setJMenuBar(menuBar);
             frame.add(mainPanel);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(800, 600);
@@ -194,12 +229,12 @@ public class LabClient {
 
     @Override
     public void actionPerformed (ActionEvent e){
-        if (e.getActionCommand().equals("Анимация") || e.getActionCommand().equals("Стоп")) {
+        if (e.getActionCommand().equals(resourceManager.getString("filter.animation.start")) || e.getActionCommand().equals(resourceManager.getString("filter.animation.stop"))) {
 
             JButton buttonSource = (JButton) e.getSource();
 
             if (check) {
-                buttonSource.setText("Анимация");
+                buttonSource.setText(resourceManager.getString("filter.animation.start"));
                 buttonSource.setBackground(Color.GREEN);
                 buttonSource.setOpaque(true);
                 buttonSource.setBorderPainted(false);
@@ -217,12 +252,12 @@ public class LabClient {
                 filteredList.clear();
 
                 if (formattedTextField.getValue()==null ){
-                    JOptionPane.showMessageDialog(null, "Установите год");
+                    JOptionPane.showMessageDialog(null, resourceManager.getString("filter.error.year"));
                 }else{
 
                     if (mscw.isSelected()) {
                         for (CitizenButton button : buttonsList) {
-                            if (button.getCitizens().getCity().equals("Москва") &&
+                            if (button.getCitizens().getCity().equals(resourceManager.getString("filter.city.moscow")) &&
                                     button.getCitizens().citizensDate().before((Date) formattedTextField.getValue()) &&
                                     (Integer)spinner.getValue() < button.getCitizens().getAge()) {
                                 filteredList.add(button);
@@ -232,7 +267,7 @@ public class LabClient {
 
                     if (stPtrsbr.isSelected()) {
                         for (CitizenButton button : buttonsList) {
-                            if (button.getCitizens().getCity().equals("Санкт-Петербург") &&
+                            if (button.getCitizens().getCity().equals(resourceManager.getString("filter.city.stptrsbrg")) &&
                                     button.getCitizens().citizensDate().before((Date) formattedTextField.getValue()) &&
                                     (Integer)spinner.getValue() < button.getCitizens().getAge()) {
                                 filteredList.add(button);
@@ -242,7 +277,7 @@ public class LabClient {
 
                     timer.start();
                     check = !check;
-                    buttonSource.setText("Стоп");
+                    buttonSource.setText(resourceManager.getString("filter.animation.stop"));
                     buttonSource.setBackground(Color.RED);
                     buttonSource.setOpaque(true);
                     buttonSource.setBorderPainted(false);
@@ -257,7 +292,33 @@ public class LabClient {
 
 
         }
+
+        else if (e.getActionCommand().equals(resourceManager.getString("system.language.russian"))){
+            resourceManager.changeLocale("ru");
+            changeLanguage();
+        }else if (e.getActionCommand().equals(resourceManager.getString("system.language.estonian"))){
+            resourceManager.changeLocale("et");
+            changeLanguage();
+        }else if (e.getActionCommand().equals(resourceManager.getString("system.language.ukranian"))){
+            resourceManager.changeLocale("uk");
+            changeLanguage();
+        } else if (e.getActionCommand().equals(resourceManager.getString("system.language.spanish"))){
+            resourceManager.changeLocale("es");
+            changeLanguage();
+        }
     }
+
+        private void changeLanguage() {
+            mscw.setText(resourceManager.getString("filter.city.moscow"));
+            stPtrsbr.setText(resourceManager.getString("filter.city.stptrsbrg"));
+            update.setText(resourceManager.getString("filter.update.collection"));
+            animate.setText(resourceManager.getString("filter.animation.start"));
+            menu.setText(resourceManager.getString("system.language"));
+            russian.setText(resourceManager.getString("system.language.russian"));
+            estonian.setText(resourceManager.getString("system.language.estonian"));
+            ukranian.setText(resourceManager.getString("system.language.ukranian"));
+            spanish.setText(resourceManager.getString("system.language.spanish"));
+        }
 
         class AnimationPanel extends JPanel implements ActionListener{
 
@@ -339,7 +400,7 @@ public class LabClient {
 
                 //new InformationPane("Сервер не отвечает, подождите", null, "Error" );
 
-                JOptionPane.showMessageDialog(null, "Сервер не отвечает, попробуйте позже");
+                JOptionPane.showMessageDialog(null, resourceManager.getString("server.notresponding"));
 
                 try {
                     Thread.sleep(4000);
