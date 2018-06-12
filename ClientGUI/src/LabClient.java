@@ -12,7 +12,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Scanner;
 
 public class LabClient {
 
@@ -56,7 +55,6 @@ public class LabClient {
             update();
             for(Citizens citizens: citizensArrayList){
                 CitizenButton curButton = new CitizenButton(citizens);
-                System.out.println(curButton.getX() + " " + curButton.getY());
                 curButton.setBounds(curButton.getX(),curButton.getY(),curButton.getWidth(),curButton.getHeight());
                 buttonsList.add(curButton);
             }
@@ -76,17 +74,14 @@ public class LabClient {
 
 
             JButton animate = new JButton("Анимация");
-            JButton update = new JButton("Обновить");
+            JButton update = new JButton("Обновить коллекцию");
 
-            animate.setAlignmentX(Component.CENTER_ALIGNMENT);
-            update.setAlignmentX(Component.CENTER_ALIGNMENT);
-            formattedTextField.setAlignmentX(Component.CENTER_ALIGNMENT);
-            spinner.setAlignmentX(Component.CENTER_ALIGNMENT);
-            mscw.setAlignmentX(Component.CENTER_ALIGNMENT);
-            stPtrsbr.setAlignmentX(Component.CENTER_ALIGNMENT);
+            JPanel functionButtonsPanel = new JPanel(new FlowLayout());
+            functionButtonsPanel.add(update);
+            functionButtonsPanel.add(animate);
 
             update.addActionListener(e -> {
-                if (e.getActionCommand().equals("Обновить")){
+                if (e.getActionCommand().equals("Обновить коллекцию")){
                     update();
 
                     for(CitizenButton button: buttonsList){
@@ -114,12 +109,15 @@ public class LabClient {
                 }
             });
 
+            //update.setMinimumSize(new Dimension(100,20));
+
             animate.setMinimumSize(new Dimension(100,20));
             animate.addActionListener(this);
             animate.setBackground(Color.GREEN);
             animate.setOpaque(true);
             animate.setBorderPainted(false);
 
+            formattedTextField.setColumns(20);
 
             try {
                 MaskFormatter dateMask = new MaskFormatter("####/##/##");
@@ -128,12 +126,14 @@ public class LabClient {
                 System.out.println("date error");
             }
 
-            functionPanel.add(animate);
-            functionPanel.add(update);
-            functionPanel.add(stPtrsbr);
-            functionPanel.add(mscw);
+            JPanel checkboxPanel = new JPanel(new FlowLayout());
+            checkboxPanel.add(mscw);
+            checkboxPanel.add(stPtrsbr);
+
+            functionPanel.add(checkboxPanel);
             functionPanel.add(formattedTextField);
             functionPanel.add(spinner);
+            functionPanel.add(functionButtonsPanel);
 
             mainPanel.add(animationPanel);
             mainPanel.add(functionPanel);
@@ -179,13 +179,13 @@ public class LabClient {
             frame.setVisible(true);
 
         }
-        public void setNewColor(CitizenButton button){
+        void setNewColor(CitizenButton button){
             button.setBackground(button.getCitizens().getNewColor());
             button.setOpaque(true);
             button.setBorderPainted(false);
         }
 
-        public void resetColor(CitizenButton button){
+        void resetColor(CitizenButton button){
             button.setBackground(button.getCitizens().getOldColor());
             button.setOpaque(true);
             button.setBorderPainted(false);
@@ -214,68 +214,44 @@ public class LabClient {
 
                 counter = 0;
 
-                buttonSource.setText("Стоп");
-                buttonSource.setBackground(Color.RED);
-                buttonSource.setOpaque(true);
-                buttonSource.setBorderPainted(false);
-
                 filteredList.clear();
 
-                //filteredList = buttonsList;
+                if (formattedTextField.getValue()==null ){
+                    JOptionPane.showMessageDialog(null, "Установите год");
+                }else{
 
-                if (mscw.isSelected()) {
-                    for (CitizenButton button : buttonsList) {
-                        if (button.getCitizens().getCity().equals("Москва") &&
-                                button.getCitizens().creationDate().before((Date) formattedTextField.getValue()) &&
-                                (Integer)spinner.getValue() < button.getCitizens().getAge()) {
-                            filteredList.add(button);
-                        }
-                    }
-                }
-
-                if (stPtrsbr.isSelected()) {
-                    for (CitizenButton button : buttonsList) {
-                        if (button.getCitizens().getCity().equals("Санкт-Петербург") &&
-                                button.getCitizens().creationDate().before((Date) formattedTextField.getValue()) &&
-                                (Integer)spinner.getValue() < button.getCitizens().getAge()) {
-                            filteredList.add(button);
-                        }
-                    }
-                }
-
-                /*if (formattedTextField.isEditValid()) {
-                    for (CitizenButton button : filteredList) {
-                        if (button.getCitizens().creationDate().before((Date) formattedTextField.getValue())) {
-                            filteredList.remove(button);
-                        }
-                    }
-                }
-*/
-                    /*for (CitizenButton button : filteredList) {
-                        if ((Integer)spinner.getValue() < button.getCitizens().getAge()) {
-                            filteredList.remove(button);
-                        }
-                    }*/
-
-
-                    /*for(CitizenButton button: buttonsList) {
-                        if (mscw.isSelected() && button.getCitizens().getCity().equals("Москва")) {
-                            filteredList.add(button);
-                        } else if (stPtrsbr.isSelected() && button.getCitizens().getCity().equals("Санкт-Петербург")) {
-                            filteredList.add(button);
-                        } else if (formattedTextField.isEditValid()) {
-                            if (button.getCitizens().creationDate().after((Date) formattedTextField.getValue())) {
-                                filteredList.add(button);
-                            }
-                        } else if ((Integer) spinner.getValue() != 0) {
-                            if ((Integer) spinner.getValue() > button.getCitizens().getAge()) {
+                    if (mscw.isSelected()) {
+                        for (CitizenButton button : buttonsList) {
+                            if (button.getCitizens().getCity().equals("Москва") &&
+                                    button.getCitizens().citizensDate().before((Date) formattedTextField.getValue()) &&
+                                    (Integer)spinner.getValue() < button.getCitizens().getAge()) {
                                 filteredList.add(button);
                             }
                         }
-                    }*/
+                    }
 
-                timer.start();
-                check = !check;
+                    if (stPtrsbr.isSelected()) {
+                        for (CitizenButton button : buttonsList) {
+                            if (button.getCitizens().getCity().equals("Санкт-Петербург") &&
+                                    button.getCitizens().citizensDate().before((Date) formattedTextField.getValue()) &&
+                                    (Integer)spinner.getValue() < button.getCitizens().getAge()) {
+                                filteredList.add(button);
+                            }
+                        }
+                    }
+
+                    timer.start();
+                    check = !check;
+                    buttonSource.setText("Стоп");
+                    buttonSource.setBackground(Color.RED);
+                    buttonSource.setOpaque(true);
+                    buttonSource.setBorderPainted(false);
+                }
+
+
+
+
+
             }
             animationPanel.repaint();
 
@@ -285,7 +261,7 @@ public class LabClient {
 
         class AnimationPanel extends JPanel implements ActionListener{
 
-            public AnimationPanel() {
+            AnimationPanel() {
                 //setLayout(new GridLayout(buttonsList.size()/3,3));
                 setLayout(null);
             }
@@ -318,12 +294,9 @@ public class LabClient {
         }
     }
 
-    public static void update(){
+    static void update(){
 
         Socket socket = null;
-
-        Scanner consoleInput = new Scanner(System.in);
-
 
             try {
                 socket = new Socket(HOST, PORT);
@@ -338,7 +311,7 @@ public class LabClient {
 
                             citizensArrayList = (ArrayList<Citizens>) input;
 
-                            citizensArrayList.forEach(Citizens -> Citizens.printInfo());
+                            citizensArrayList.forEach(c -> c.printInfo());
 
                             //new ClientGUI(mainSet);
 

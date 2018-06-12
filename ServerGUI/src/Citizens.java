@@ -7,16 +7,23 @@ import java.awt.*;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Random;
 
 public class Citizens implements Serializable{
     private String name;
     private int age;
-    public DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    public Date date = new Date();
+    DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+    Date startingDate = new Date();
+    GregorianCalendar gc = new GregorianCalendar();
+    Date date;
     private String city;
-    private String err = "";
+
+    LocalDateTime localDateTime = LocalDateTime.now();
 
     Random rand = new Random();
     float r = rand.nextFloat();
@@ -27,23 +34,25 @@ public class Citizens implements Serializable{
     private float newR=r,newG=g,newB=b;
     private float rStep = r/7, gStep = (1-g) / 7, bStep = b/7;
 
-    public Color getNewColor(){
+    Color getNewColor(){
         newR-=rStep;
         newG+=gStep;
         newB-=bStep;
 
         if (newR < 0){
             newR = 0f;
-        }else if (newG>1){
+        }
+        if (newG>1){
             newG = 0.8f;
-        }else if (newB < 0){
+        }
+        if (newB < 0){
             newB = 0f;
         }
 
         return new Color(newR,newG,newB);
     }
 
-    public Color getOldColor() {
+    Color getOldColor() {
         newR+=rStep;
         newG-=gStep;
         newB+=bStep;
@@ -61,17 +70,13 @@ public class Citizens implements Serializable{
         return new Color(newR,newG,newB);
     }
 
-    public void resetNewColor(){
+    void resetNewColor(){
         newR=r;
         newG=g;
         newB=b;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public void setCity() {
+    void setCity() {
         if((int)(Math.random()*2) == 1){
             city = "Санкт-Петербург";
         }else {
@@ -79,112 +84,74 @@ public class Citizens implements Serializable{
         }
     }
 
-    public Random getRand() {
-        return rand;
-    }
-
-    public void setRand(Random rand) {
-        this.rand = rand;
-    }
-
-    public float getR() {
-        return r;
-    }
-
-    public void setR(float r) {
-        this.r = r;
-    }
-
-    public float getG() {
-        return g;
-    }
-
-    public void setG(float g) {
-        this.g = g;
-    }
-
-    public float getB() {
-        return b;
-    }
-
-    public void setB(float b) {
-        this.b = b;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     public Color getColor() {
         return color;
-    }
-
-
-
-
-    public String getErr() {
-        return err;
-    }
-
-    public void setErr(String err) {
-        this.err = err;
     }
 
     public Citizens(){
         setCity();
     }
 
+    private void setCitizensDate() {
+        gc.setTime(startingDate);
+        gc.add(Calendar.YEAR, -getAge());
+        date = gc.getTime();
+    }
+
     public Citizens(String name, int age) {
         this.name = name;
         this.age = age;
         setCity();
+        //setCitizensDate();
     }
 
     public Citizens(String name, String age) {
         this.name = name;
         this.age = Integer.parseInt(age);
         setCity();
+        //setCitizensDate();
     }
 
-    public Date creationDate(){
+    Date citizensDate(){
         return date;
     }
 
-    public String getDate() {
+    String getDate() {
+        gc.setTime(startingDate);
+        gc.add(Calendar.YEAR, -getAge());
+        date = gc.getTime();
         return dateFormat.format(date);
     }
 
-    public String getName() {
+    String getName() {
 
         return name;
     }
 
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 
-    public int getAge() {
+    int getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    void setAge(int age) {
         this.age = age;
+        setCitizensDate();
     }
 
-    public void setAge(String age) {
+    void setAge(String age) {
         this.age = Integer.parseInt(age);
     }
 
-    public String getCity(){
+    String getCity(){
         return city;
     }
 
-    public void printInfo(){
-        if(err!="")
+    void printInfo(){
             System.out.printf("%s, %d, %s, %s \n", getName(), getAge(), getCity(), getDate());
-        else
-            System.out.println(err);
-    }
+        }
 
     @Override
     public String toString() {
