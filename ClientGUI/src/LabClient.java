@@ -19,9 +19,9 @@ public class LabClient {
 
     private static final int PORT = 1488;
     private static final String HOST = "localhost";
-    private static final DateFormat df = new SimpleDateFormat("yyyy/mm/dd");
     private static ArrayList<Citizens> citizensArrayList;
     private static ResourceManager resourceManager = new ResourceManager("data","ru");
+    private static DateFormat df = new SimpleDateFormat(resourceManager.getString("filter.year.format"));
 
 
     public static void main (String[] args){
@@ -36,6 +36,7 @@ public class LabClient {
         private AnimationPanel animationPanel;
         private JPanel mainPanel;
         JFormattedTextField formattedTextField = new JFormattedTextField(df);
+        MaskFormatter dateMask;
 
         JCheckBox stPtrsbr = new JCheckBox(resourceManager.getString("filter.city.stptrsbrg"));
         JCheckBox mscw = new JCheckBox(resourceManager.getString("filter.city.moscow"));
@@ -151,10 +152,13 @@ public class LabClient {
             animate.setOpaque(true);
             animate.setBorderPainted(false);
 
-            formattedTextField.setColumns(20);
+            formattedTextField.setColumns(10);
+            formattedTextField.setMaximumSize(new Dimension(300,150));
+
+            spinner.setMaximumSize(new Dimension(300,150));
 
             try {
-                MaskFormatter dateMask = new MaskFormatter("####/##/##");
+                dateMask = new MaskFormatter(resourceManager.getString("filter.year.mask"));
                 dateMask.install(formattedTextField);
             } catch (ParseException ex) {
                 System.out.println("date error");
@@ -318,6 +322,14 @@ public class LabClient {
             estonian.setText(resourceManager.getString("system.language.estonian"));
             ukranian.setText(resourceManager.getString("system.language.ukranian"));
             spanish.setText(resourceManager.getString("system.language.spanish"));
+            df = new SimpleDateFormat(resourceManager.getString("filter.year.format"));
+            try {
+                dateMask.setMask(resourceManager.getString("filter.year.mask"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            formattedTextField.revalidate();
+            formattedTextField.repaint();
         }
 
         class AnimationPanel extends JPanel implements ActionListener{

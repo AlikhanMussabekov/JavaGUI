@@ -14,7 +14,12 @@ import java.util.GregorianCalendar;
 import java.util.Random;
 
 public class Citizens implements Serializable{
+
+    @DBField
+    @PrimaryKey
     private String name;
+
+    @DBField
     private int age;
     DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -23,6 +28,7 @@ public class Citizens implements Serializable{
     Date date;
     private String city;
 
+    @DBField
     LocalDateTime localDateTime = LocalDateTime.now();
 
     Random rand = new Random();

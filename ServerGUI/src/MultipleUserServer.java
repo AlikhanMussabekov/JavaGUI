@@ -31,6 +31,7 @@ public class MultipleUserServer {
         DynamicTree treePanel;
         Citizens selectedCitizen;
         CommandType commandType;
+        PassHash passHash = new PassHash();
 
         private ServerGUI() {
             super("Сервер");
@@ -380,10 +381,12 @@ public class MultipleUserServer {
 
 
                     Scanner hashIn = new Scanner(new File(PATH));
-                    int hcodePassFile = hashIn.nextInt();
+                    //int hcodePassFile = hashIn.nextInt();
+                    String hcodePassFile = hashIn.next();
 
+                    System.out.println(passHash.hash(enteredPassword.concat(USERNAME)).equals(hcodePassFile));
 
-                    if(enteredPassword.concat(USERNAME).hashCode() == hcodePassFile){
+                    if(passHash.hash(enteredPassword).equals(hcodePassFile)){
                         passwordCheckLabel.setText("Верный пароль");
                         passwordCheckLabel.setForeground(Color.GREEN);
                         passwordTextField.setBorder(BorderFactory.createLineBorder(Color.GREEN));

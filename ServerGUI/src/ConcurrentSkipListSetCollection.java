@@ -1,6 +1,9 @@
 import org.json.simple.JSONObject;
 
 import java.io.*;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Scanner;
@@ -12,6 +15,11 @@ class ConcurrentSkipListSetCollection implements Serializable {
     private Comparator<Citizens> citizensComparator = new CitizenNameComporator();
     private ConcurrentSkipListSet<Citizens> types = new ConcurrentSkipListSet<>(citizensComparator);
 
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
+    private static final String USER = "postgres";
+    private static final String PASS = "1234";
+
+    JDBCPostgre database = new JDBCPostgre(Citizens.class);
 
     private Scanner in = null;
     private String path = "";
@@ -79,6 +87,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
             index = 0;
 
             types.add(curCitizen);
+            database.insert(curCitizen);
             //System.out.println(in.next() + " " + in.next());
         }
 
@@ -91,7 +100,22 @@ class ConcurrentSkipListSetCollection implements Serializable {
                 "\n" +
                 "----------------------");
 
-        types.forEach(Citizens -> System.out.println(Citizens.getName() + " " + Citizens.getAge()));
+        //types.forEach(Citizens -> System.out.println(Citizens.getName() + " " + Citizens.getAge()));
+
+        try {
+            ResultSet resultSet = DriverManager.getConnection(DB_URL,USER,PASS).createStatement().executeQuery( "SELECT * FROM CITIZENS;" );
+
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString("name") + " " +
+                        resultSet.getString("age") + " " +
+                        resultSet.getString("localDateTime")
+
+                        );
+            }
+            resultSet.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         /*for(Citizens type: types){
             System.out.println(type.getName() + " " + type.getAge());
@@ -126,7 +150,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
         buffer = curStr.toString().getBytes();
         out.write(buffer, 0, buffer.length);
-
+        database.commit();
         out.close();
         //in.close();
 
@@ -152,6 +176,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
         if (types.higher(curElement)== null){
             types.add(curElement);
+            database.insert(curElement);
             System.out.println("Element successfully added...");
         }
         else
@@ -171,6 +196,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
         if (types.lower(curElement)== null){
             types.add(curElement);
+            database.insert(curElement);
             System.out.println("Element successfully added...");
         }
         else
@@ -184,7 +210,9 @@ class ConcurrentSkipListSetCollection implements Serializable {
         //System.out.println(jsonCommand.get("name") + " " + jsonCommand.get("age"));
 
         try {
-            types.add(new Citizens(jsonCommand.get("name").toString(), String.valueOf(jsonCommand.get("age"))));
+            Citizens citizens = new Citizens(jsonCommand.get("name").toString(), String.valueOf(jsonCommand.get("age")));
+            types.add(citizens);
+            database.insert(citizens);
             System.out.println("Element successfully added...");
             writeElements();
         }catch (ClassCastException e){
@@ -197,6 +225,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
     void add_element(Citizens citizen){
         //System.out.println(citizen.getName());
         types.add(citizen);
+        database.insert(citizen);
         writeElements();
     }
 
@@ -210,6 +239,7 @@ class ConcurrentSkipListSetCollection implements Serializable {
 
     void removeElement(Citizens selectedCitizen){
         System.out.println(types.remove(selectedCitizen));
+        database.delete(selectedCitizen);
         System.out.println("removed");
     }
 

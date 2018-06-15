@@ -7,16 +7,19 @@ import java.awt.*;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Random;
-import java.time.LocalDateTime;
 
 public class Citizens implements Serializable{
+
+    @DBField
+    @PrimaryKey
     private String name;
+
+    @DBField
     private int age;
     DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -25,6 +28,7 @@ public class Citizens implements Serializable{
     Date date;
     private String city;
 
+    @DBField
     LocalDateTime localDateTime = LocalDateTime.now();
 
     Random rand = new Random();
